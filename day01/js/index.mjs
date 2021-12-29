@@ -1,18 +1,24 @@
 import * as readline from 'node:readline';
 import * as fs from 'node:fs';
 
+
+const data = [];
 const rl = readline.createInterface({ 
     input: fs.createReadStream('./input') 
 });
 
-let last = null;
-let counter = 0;
-
 for await (const line of rl) {
-    const v = parseInt(line, 10);
+    data.push(parseInt(line, 10));
+}
+
+
+let last = null;
+let part1 = 0;
+
+for (const v in data) {
     if (last !== null && v > last) counter++;
     last = v;    
 }
 
-console.log(counter);
+console.log('part1', part1);
 
