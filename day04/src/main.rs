@@ -7,7 +7,7 @@ struct Field {
 struct Board {
     fields: Vec<Field>,
     won: bool,
-    score: u16,
+    score: u32,
 }
 
 impl std::fmt::Display for Board {
@@ -27,18 +27,17 @@ impl std::fmt::Display for Board {
 }
 
 impl Board {
-    fn mark_number(&mut self, draw: u16) {
+    fn mark_number(&mut self, draw: u16) -> Option<u32> {
         if self.won {
-            return;
+            return None;
         }
-
         
         let field = self.fields
             .iter_mut()
             .find(|f| f.value == draw);
 
         if field.is_none() {
-            return
+            return None
         }
 
         field.unwrap().drawn = true;
@@ -60,8 +59,11 @@ impl Board {
         // calc score
         if self.won {
             let undrawn_sum = self.fields.iter().filter(|f| !f.drawn).fold(0, |accm, f| accm + f.value );
-            self.score = undrawn_sum * draw;
+            self.score = undrawn_sum as u32 * draw as u32;
+            return Some(self.score);
         }
+
+        return None;
     }
 }
 
@@ -71,17 +73,26 @@ fn main() {
     println!("draws: {:?}", draws);
 
     let mut boards = parse_boards(&input);
+    let mut last_board_won: usize = usize::MAX;
+    let mut last_board_won_score: u32 = u32::MAX;
 
     for draw in draws.iter() {
         println!("draw: {:?}", draw);
         for (index, board) in boards.iter_mut().enumerate() {
-            board.mark_number(*draw);
+            let score = board.mark_number(*draw);
             println!("board {}:\n{}", index, board);
-            if board.won {
-                println!("board {} won with score {}", index, board.score);
-                return;
+
+            if score.is_some() {
+                last_board_won_score = score.unwrap();
+                last_board_won = index;
             }
         }
+    }
+
+    if last_board_won_score < u32::MAX {
+        println!("board {} won last with score {}", last_board_won, last_board_won_score);
+    } else {
+        println!("only loosers here");
     }
 }
 
